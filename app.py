@@ -14,8 +14,8 @@ def on_open():
         lines = f.readlines()
         dr.task_points = int(lines[0].strip())
         dr.dice_points = int(lines[1].strip())
-        if len(lines) > 2:
-            dr.past_rolls = json.loads(lines[2].strip())
+        # if len(lines) > 2:
+        #     dr.past_rolls = json.loads(lines[2].strip())
 
 def on_save(save_past_rolls=False):
     global dr, file_path
@@ -23,8 +23,8 @@ def on_save(save_past_rolls=False):
         f.seek(0)
         f.write(str(dr.task_points) + '\n')
         f.write(str(dr.dice_points) + '\n')
-        if save_past_rolls and dr.past_rolls:
-            f.write(json.dumps(dr.past_rolls) + '\n')
+        # if save_past_rolls and dr.past_rolls:
+        #     f.write(json.dumps(dr.past_rolls) + '\n')
 
 def reset():
     global dr
