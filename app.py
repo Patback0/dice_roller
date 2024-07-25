@@ -56,9 +56,9 @@ def todoist():
 
     # here is where we can diverge into many different functions.
     pattern = r'\{(-?\d+)\}'
-    match = re.search(pattern, content).group(1)
+    match = re.search(pattern, content)
     if not match: return jsonify({'message': 'Task received', 'task':'no update'}), 200
-
+    match = match.group(1)
     if not dr.add_del_handle_successful(int(match)): # if it's a 0, we want to reset
         reset()
         socketio.emit('update', {'dice_points': dr.dice_points, 'task_points': dr.task_points, 'past_rolls': dr.past_rolls})
@@ -68,6 +68,7 @@ def todoist():
     return jsonify({'message': 'Task received', 'dice points': dr.dice_points, 'task points': dr.task_points}), 200
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    #app.run(debug=True, host='0.0.0.0')
+    socketio.run(app, debug=True, host='0.0.0.0')
 
     
