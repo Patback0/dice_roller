@@ -1,9 +1,10 @@
-from flask import Flask, request, jsonify
-from collections import Counter
+from flask import Flask, request, jsonify, render_template
+from flask_socketio import SocketIO, emit
 import re
 from roller import DiceRoller
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 dr = DiceRoller()
 file_path = './test_pts.txt'
 
@@ -31,7 +32,7 @@ on_open() # read automatically
 @app.route('/')
 def index():
     global dr
-    return f'Dice Points: {dr.dice_points} \n Task Points: {dr.task_points} \n Rolls: {dr.past_rolls}'
+    return render_template('index.html', dice_points=dr.dice_points, task_points=dr.task_points, past_rolls=dr.past_rolls)
 
 @app.route('/todoist', methods=['POST'])
 def todoist():
@@ -47,8 +48,10 @@ def todoist():
 
     if not dr.add_del_handle_successful(int(match)): # if it's a 0, we want to reset
         reset()
+        socketio.emit('update', {'dice_points': dr.dice_points, 'task_points': dr.task_points, 'past_rolls': dr.past_rolls})
         return jsonify({'message': 'Task received', 'task':'no update'}), 200
 
+    socketio.emit('update', {'dice_points': dr.dice_points, 'task_points': dr.task_points, 'past_rolls': dr.past_rolls})
     return jsonify({'message': 'Task received', 'dice points': dr.dice_points, 'task points': dr.task_points}), 200
 
 if __name__ == '__main__':

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dice and Task Points</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .dice-points {
+            font-size: 4em;
+            text-align: center;
+        }
+        .task-points {
+            font-size: 2em;
+            text-align: center;
+        }
+        .past-rolls {
+            margin-top: 20px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        .roll-counter {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #333;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        document.addEventListener("DOMContentLoaded", function() {
+            var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+            socket.on('update', function(data) {
+                document.querySelector('.dice-points').innerHTML = 'Dice Points: ' + data.dice_points;
+                document.querySelector('.task-points').innerHTML = 'Task Points: ' + data.task_points + '/20';
+                
+                var pastRolls = document.querySelector('.past-rolls');
+                pastRolls.innerHTML = '<h3>Past Rolls:</h3>';
+                for (var number in data.past_rolls) {
+                    var counterDiv = document.createElement('div');
+                    counterDiv.className = 'roll-counter';
+                    counterDiv.innerHTML = number + ': ' + data.past_rolls[number];
+                    pastRolls.appendChild(counterDiv);
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="task-points">
+        Task Points: {{ task_points }}/20
+    </div>
+    <div class="dice-points">
+        Dice Points: {{ dice_points }}
+    </div>
+    <div class="past-rolls">
+        <h3>Past Rolls:</h3>
+        {% for number, count in past_rolls.items() %}
+        <div class="roll-counter">
+            {{ number }}: {{ count }}
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
