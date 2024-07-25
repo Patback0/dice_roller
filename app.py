@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, render_template
-from flask_socketio import SocketIO, emit
-import re
+from flask_socketio import SocketIO
 from roller import DiceRoller
+import re, signal, sys, json
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -11,15 +11,20 @@ file_path = './test_pts.txt'
 def on_open():
     global dr, file_path
     with open(file_path, 'r+') as f:
-        dr.task_points = int(f.readline().strip())
-        dr.dice_points = int(f.readline().strip())
+        lines = f.readlines()
+        dr.task_points = int(lines[0].strip())
+        dr.dice_points = int(lines[1].strip())
+        if len(lines) > 2:
+            dr.past_rolls = json.loads(lines[2].strip())
 
-def on_save():
+def on_save(save_past_rolls=False):
     global dr, file_path
     with open(file_path, 'w') as f:
         f.seek(0)
         f.write(str(dr.task_points) + '\n')
         f.write(str(dr.dice_points) + '\n')
+        if save_past_rolls and dr.past_rolls:
+            f.write(json.dumps(dr.past_rolls) + '\n')
 
 def reset():
     global dr
@@ -27,6 +32,14 @@ def reset():
     dr.dice_points = round(dr.dice_points * 1.01)
     on_save() # save to file
 
+def handle_shutdown(signum, frame):
+    print('Shutting down gracefully...')
+    on_save(True) # save past rolls in the event of an unexpected shutdown
+    sys.exit(0)
+
+# Register signal handlers for termination signals
+signal.signal(signal.SIGTERM, handle_shutdown)
+signal.signal(signal.SIGINT, handle_shutdown)
 on_open() # read automatically
 
 @app.route('/')
