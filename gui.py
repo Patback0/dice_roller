@@ -14,19 +14,43 @@ def start_tkinter(dr):
     root.geometry("1024x600")
     root.configure(bg='#0a0000')
 
-    frame = tk.Frame(root, bg='#0a0000')
-    frame.pack(expand=True)
+    # Main frame to hold all widgets
+    main_frame = tk.Frame(root, bg='#0a0000')
+    main_frame.pack(expand=True)
 
-    label_var1 = tk.Label(frame, text=f"Task Points: {dr.task_points}", font=('Arial', 36), fg='white', bg='black')
-    label_var1.pack()
+    label_var1 = tk.Label(main_frame, text=f"Task Points: {dr.task_points}/20", font=('Arial', 36), fg='white', bg='black')
+    label_var1.pack(pady=10)
 
-    label_var2 = tk.Label(frame, text=f"Dice Points: {dr.dice_points}", font=('Arial', 36),fg='white', bg='black')
-    label_var2.pack()
+    label_var2 = tk.Label(main_frame, text=f"Dice Points: {dr.dice_points}", font=('Arial', 36), fg='white', bg='black')
+    label_var2.pack(pady=10)
+
+    # frame to hold past rolls
+    past_rolls_frame = tk.Frame(main_frame, bg='#0a0000')
+    past_rolls_frame.pack(pady=20)
+
+    past_rolls_title = tk.Label(past_rolls_frame, text="Past Rolls:", font=('Arial', 24), fg='white', bg='#0a0000')
+    past_rolls_title.pack()
+
+    # sub-frame to hold roll counters horizontally
+    roll_counters_frame = tk.Frame(past_rolls_frame, bg='#0a0000')
+    roll_counters_frame.pack(pady=10)
+
+    def update_past_rolls():
+        # clear the existing rolls
+        for widget in roll_counters_frame.winfo_children():
+            widget.destroy()
+
+        # display rolls horizontally
+        for number, count in dr.past_rolls.items():
+            roll_counter = tk.Label(roll_counters_frame, text=f"{number}: {count}", font=('Arial', 18), fg='white', bg='#333', padx=10, pady=5)
+            roll_counter.pack(side=tk.LEFT, padx=5)
 
     def update_display():
-        label_var1.config(text=f"Task Points: {dr.task_points}")
+        label_var1.config(text=f"Task Points: {dr.task_points}/20")
         label_var2.config(text=f"Dice Points: {dr.dice_points}")
-        root.after(1000, update_display) # update every second
+        update_past_rolls()
+        root.after(1000, update_display)  # update every second
 
     update_display()
     root.mainloop()
+
