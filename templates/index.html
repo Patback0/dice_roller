@@ -38,26 +38,6 @@
             background-color: #333;
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
-    <script type="text/javascript" charset="utf-8">
-        document.addEventListener("DOMContentLoaded", function() {
-            var socket = io.connect('https://sharing-locust-solely.ngrok-free.app/');
-
-            socket.on('update', function(data) {
-                document.querySelector('.dice-points').innerHTML = 'Dice Points: ' + data.dice_points;
-                document.querySelector('.task-points').innerHTML = 'Task Points: ' + data.task_points + '/20';
-                
-                var pastRolls = document.querySelector('.past-rolls');
-                pastRolls.innerHTML = '<h3>Past Rolls:</h3>';
-                for (var number in data.past_rolls) {
-                    var counterDiv = document.createElement('div');
-                    counterDiv.className = 'roll-counter';
-                    counterDiv.innerHTML = number + ': ' + data.past_rolls[number];
-                    pastRolls.appendChild(counterDiv);
-                }
-            });
-        });
-    </script>
 </head>
 <body>
     <div class="task-points">

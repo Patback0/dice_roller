@@ -1,12 +1,45 @@
 from flask import Flask, request, jsonify, render_template
-from flask_socketio import SocketIO
 from roller import DiceRoller
 import re, signal, sys, json
+import threading
+import tkinter as tk
 
 app = Flask(__name__)
-socketio = SocketIO(app)
 dr = DiceRoller()
 file_path = './test_pts.txt'
+
+# Tkinter GUI Setup
+def start_tkinter():
+    root = tk.Tk()
+    root.title("Dice Roller")
+
+    # Styling options
+    root.geometry("1024x600")
+    root.configure(bg='#0a0000')
+
+    frame = tk.Frame(root, bg='#0a0000')
+    frame.pack(expand=True)
+
+    label_var1 = tk.Label(frame, text=f"Task Points: {dr.task_points}", font=('Arial', 36), fg='white', bg='black')
+    label_var1.pack()
+
+    label_var2 = tk.Label(frame, text=f"Dice Points: {dr.dice_points}", font=('Arial', 36),fg='white', bg='black')
+    label_var2.pack()
+
+    def update_display():
+        label_var1.config(text=f"Task Points: {dr.task_points}")
+        label_var2.config(text=f"Dice Points: {dr.dice_points}")
+        root.after(1000, update_display) # update every second
+
+    update_display()
+    root.mainloop()
+
+# Start the Tkinter GUI in a separate thread
+def start_tkinter_thread():
+    if threading.active_count() == 1:  # Ensure no other threads are running
+        tkinter_thread = threading.Thread(target=start_tkinter)
+        tkinter_thread.daemon = True
+        tkinter_thread.start()
 
 def on_open():
     global dr, file_path
@@ -61,14 +94,12 @@ def todoist():
     match = match.group(1)
     if not dr.add_del_handle_successful(int(match)): # if it's a 0, we want to reset
         reset()
-        socketio.emit('update', {'dice_points': dr.dice_points, 'task_points': dr.task_points, 'past_rolls': dr.past_rolls})
         return jsonify({'message': 'Task received', 'task':'no update'}), 200
 
-    socketio.emit('update', {'dice_points': dr.dice_points, 'task_points': dr.task_points, 'past_rolls': dr.past_rolls})
     return jsonify({'message': 'Task received', 'dice points': dr.dice_points, 'task points': dr.task_points}), 200
 
 if __name__ == '__main__':
-    #app.run(debug=True, host='0.0.0.0')
-    socketio.run(app, debug=True, host='0.0.0.0')
+    start_tkinter_thread()
+    app.run(debug=False, host='0.0.0.0')
 
     
