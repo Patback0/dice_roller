@@ -8,15 +8,15 @@ class DiceRoller:
     self.past_rolls = Counter()
 
   def dice_roll(self):
-    # Implement the logic to roll the dice here
+    if self.task_points < 20: return
+    
     roll_count = self.task_points // 20
-    self.task_points = self.task_points % 20
+    self.task_points %= 20
     results = []
     for _ in range(roll_count):
         curr_coin, num_coin = 1, 2
         while curr_coin == 1:
-            outcome = random.randint(1, 20)
-            results.append(outcome)
+            results.append(random.randint(1, 20))
             curr_coin = random.randint(1, num_coin)
             num_coin *= 2
 
@@ -37,9 +37,9 @@ class DiceRoller:
 
   # for now, positive number indicates task point addition.
   # if negative, assume a del against dice points.
-  def add_del_handle_successful(self, value):
+  def add_del_success(self, value):
     if value == 0: return False
     if value > 0: self.task_points += value
     elif value < 0: self.dice_points += value
-    if self.task_points >= 20: self.dice_roll()
+    self.dice_roll()
     return True
