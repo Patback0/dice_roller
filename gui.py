@@ -18,32 +18,39 @@ def start_tkinter(dr):
     main_frame = tk.Frame(root, bg='#0a0000')
     main_frame.pack(expand=True)
 
+    # Task Points Label
     label_var1 = tk.Label(main_frame, text=f"Task Points: {dr.task_points}/20", font=('Arial', 36), fg='white', bg='black')
     label_var1.pack(pady=10)
 
+    # Dice Points Label
     label_var2 = tk.Label(main_frame, text=f"Dice Points: {dr.dice_points}", font=('Arial', 36), fg='white', bg='black')
     label_var2.pack(pady=10)
 
-    # frame to hold past rolls
+    # Frame to hold past rolls
     past_rolls_frame = tk.Frame(main_frame, bg='#0a0000')
     past_rolls_frame.pack(pady=20)
 
+    # Title for Past Rolls
     past_rolls_title = tk.Label(past_rolls_frame, text="Past Rolls:", font=('Arial', 24), fg='white', bg='#0a0000')
     past_rolls_title.pack()
 
-    # sub-frame to hold roll counters horizontally
+    # Sub-frame to hold roll counters horizontally
     roll_counters_frame = tk.Frame(past_rolls_frame, bg='#0a0000')
     roll_counters_frame.pack(pady=10)
 
-    def update_past_rolls():
-        # clear the existing rolls
-        for widget in roll_counters_frame.winfo_children():
-            widget.destroy()
+    # Dictionary to store roll number labels
+    roll_labels = {}
 
-        # display rolls horizontally
+    # Function to update past rolls display
+    def update_past_rolls():
+        # Update existing labels or create new ones if necessary
         for number, count in dr.past_rolls.items():
-            roll_counter = tk.Label(roll_counters_frame, text=f"{number}: {count}", font=('Arial', 18), fg='white', bg='#333', padx=10, pady=5)
-            roll_counter.pack(side=tk.LEFT, padx=5)
+            if number in roll_labels:
+                roll_labels[number].config(text=f"{number}: {count}")
+            else:
+                roll_counter = tk.Label(roll_counters_frame, text=f"{number}: {count}", font=('Arial', 18), fg='white', bg='#333', padx=10, pady=5)
+                roll_counter.pack(side=tk.LEFT, padx=5)
+                roll_labels[number] = roll_counter
 
     def update_display():
         label_var1.config(text=f"Task Points: {dr.task_points}/20")
