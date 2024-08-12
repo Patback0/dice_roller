@@ -14,36 +14,29 @@ def start_tkinter(dr):
     root.geometry("1024x600")
     root.configure(bg='#0a0000')
 
-    # Main frame to hold all widgets
     main_frame = tk.Frame(root, bg='#0a0000')
     main_frame.pack(expand=True)
 
-    # Task Points Label
     label_var1 = tk.Label(main_frame, text=f"Task Points: {dr.task_points}/20", font=('Arial', 36), fg='white', bg='black')
     label_var1.pack(pady=10)
 
-    # Dice Points Label
     label_var2 = tk.Label(main_frame, text=f"Dice Points: {dr.dice_points}", font=('Arial', 36), fg='white', bg='black')
     label_var2.pack(pady=10)
 
-    # Frame to hold past rolls
     past_rolls_frame = tk.Frame(main_frame, bg='#0a0000')
     past_rolls_frame.pack(pady=20)
 
-    # Title for Past Rolls
     past_rolls_title = tk.Label(past_rolls_frame, text="Past Rolls:", font=('Arial', 24), fg='white', bg='#0a0000')
     past_rolls_title.pack()
 
-    # Sub-frame to hold roll counters horizontally
+    # sub-frame to hold roll counters horizontally
     roll_counters_frame = tk.Frame(past_rolls_frame, bg='#0a0000')
     roll_counters_frame.pack(pady=10)
 
-    # Dictionary to store roll number labels
     roll_labels = {}
 
-    # Function to update past rolls display
     def update_past_rolls():
-        # Update existing labels or create new ones if necessary
+        # update existing labels or create new ones if necessary
         for number, count in dr.past_rolls.items():
             if number in roll_labels:
                 roll_labels[number].config(text=f"{number}: {count}")
