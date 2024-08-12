@@ -20,7 +20,7 @@ class DiceRollerApp:
         # registering routes
         self.app.add_url_rule('/', 'index', self.index)
         self.app.add_url_rule('/todoist', 'todoist', self.todoist, methods=['POST'])
-        self.app.add_url_rule('/test', 'test', self.process_motion_tasks)
+        #self.app.add_url_rule('/test', 'test', self.process_motion_tasks)
 
         # registering signal handlers
         signal.signal(signal.SIGTERM, self.handle_shutdown)
@@ -29,15 +29,19 @@ class DiceRollerApp:
         # initialize data
         on_open(self.dr, self.file_path)
 
-        # # POST request to Motion every 30 minutes
-        # schedule.every(30).minutes.do(self.send_post_request)
+    def daily_reset(self):
+        # Reset the state at 2:00 AM every day
+        print("Running daily reset...")
+        reset(self.dr, self.file_path)
+        print("Reset completed.")
 
-        # scheduler_thread = Thread(target=self.run_scheduler)
-        # scheduler_thread.daemon = True
-        # scheduler_thread.start()
+    def run_scheduler(self):
+        while True:
+            schedule.run_pending()
+            time.sleep(60)
 
     def process_motion_tasks(self):
-        # Step 1: Send GET request to retrieve tasks with status "Completed" and label "Points"
+        # Step 1: send GET request to retrieve tasks with status "Completed" and label "dr"
         headers = {
             "X-API-Key": self.api_key,
         }
@@ -53,7 +57,6 @@ class DiceRollerApp:
             # Step 2: Process up to 5 tasks
             upper_bound = min(5, len(tasks))
             for task in tasks[:upper_bound]:
-                print(task)
                 description = task.get("description", "")
                 match = re.search(r'\{(-?\d+)\}', description)
                 if match:
@@ -61,23 +64,18 @@ class DiceRollerApp:
                     print(points)
                     self.dr.add_del_success(points)
 
-                    # Step 3: Send PATCH request to remove the "Points" label from the task
-                    self.remove_points_label(task)
-            return jsonify({'message': 'Task received GOOD'}), 200
+                    # Step 3: Send PATCH request to remove the "dr" label from the task
+                    self.update_task(task)
 
         else:
             print(f"Failed to retrieve tasks: {response.status_code} - {response.text}")
-            return jsonify({'message': 'Task received BAD'}), 200
-        
-        #return jsonify({'message': 'Task received'}), 200
 
-    def remove_points_label(self, task):
+    def update_task(self, task):
         task_id = task["id"]
         url = f"{self.motion_api_url}/{task_id}"
         
         updated_labels = [label for label in task.get("labels", []) if label["name"] != self.remove_points_label]
         
-        # Construct the PATCH request body with the updated labels
         data = {
             "name": task["name"],
             "dueDate": task.get("dueDate"),
@@ -118,9 +116,21 @@ class DiceRollerApp:
             response = {'task': 'no update'}
 
         return jsonify({'message': 'Task received', **response}), 200
+    
+    def start_scheduler(self):
+        # POST request to Motion every 30 minutes
+        schedule.every(2).minutes.do(self.process_motion_tasks)
+
+        # schedule reset method at 2:00 AM every day
+        schedule.every().day.at("02:00").do(self.daily_reset)
+
+        scheduler_thread = Thread(target=self.run_scheduler)
+        scheduler_thread.daemon = True
+        scheduler_thread.start()
 
     def run(self):
         start_tkinter_thread(self.dr)
+        self.start_scheduler()
         self.app.run(debug=False, host='0.0.0.0')
 
 if __name__ == '__main__':
